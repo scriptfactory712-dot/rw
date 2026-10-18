@@ -543,6 +543,20 @@ updateFOVCircle()
 pcall(function()
 aimBtn.BackgroundColor3 = State.Aimbot and Color3.fromRGB(255, 60, 60) or Color3.fromRGB(30, 30, 30)
 end)
+if State.Aimbot and (not State.AimbotRequireWeapon or hasWeapon()) then
+local target = getClosestPlayerInFOV()
+if target and target.Character then
+local part = target.Character:FindFirstChild(State.AimPart) or target.Character:FindFirstChild("HumanoidRootPart")
+if part and cam then
+local desired = CFrame.new(cam.CFrame.Position, part.Position)
+if State.AimSmooth and State.AimSmooth > 0 then
+cam.CFrame = cam.CFrame:Lerp(desired, 1 / (State.AimSmooth + 1))
+else
+cam.CFrame = desired
+end
+end
+end
+end
 if State.Fly and RootPart and cam then
 local vel = Vector3.zero
 if UserInputService:IsKeyDown(Enum.KeyCode.W) then vel = vel + cam.CFrame.LookVector end
@@ -590,25 +604,6 @@ if Humanoid.FloorMaterial ~= Enum.Material.Air then
 Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
 end
 end
-end)
-local function aimbotStep()
-if not State.Aimbot then return end
-if State.AimbotRequireWeapon and not hasWeapon() then return end
-local cam = workspace.CurrentCamera
-if not cam then return end
-local target = getClosestPlayerInFOV()
-if not target or not target.Character then return end
-local part = target.Character:FindFirstChild(State.AimPart) or target.Character:FindFirstChild("HumanoidRootPart")
-if not part then return end
-local desired = CFrame.new(cam.CFrame.Position, part.Position)
-if State.AimSmooth and State.AimSmooth > 0 then
-cam.CFrame = cam.CFrame:Lerp(desired, 1 / (State.AimSmooth + 1))
-else
-cam.CFrame = desired
-end
-end
-pcall(function()
-RunService:BindToRenderStep("RivalsAimbot", 2000, aimbotStep)
 end)
 UserInputService.JumpRequest:Connect(function()
 if State.InfiniteJump and Humanoid then
