@@ -22,6 +22,7 @@ Noclip = false,
 AntiVoid = false,
 BunnyHop = false,
 NoFallDamage = false,
+FPSBoost = false,
 FOV = 70,
 Aimbot = false,
 AimbotRequireWeapon = true,
@@ -406,6 +407,31 @@ end
 end })
 m2:Toggle({ Title = "Anti-Void", Value = false, Callback = function(s) State.AntiVoid = s end })
 m2:Toggle({ Title = "BunnyHop", Value = false, Callback = function(s) State.BunnyHop = s end })
+m2:Toggle({ Title = "FPS Boost", Value = false, Callback = function(s)
+State.FPSBoost = s
+if s then
+pcall(function()
+settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+workspace.Terrain.WaterWaveSize = 0
+workspace.Terrain.WaterWaveSpeed = 0
+workspace.Terrain.WaterReflectance = 0
+workspace.Terrain.WaterTransparency = 0
+for _, v in ipairs(workspace:GetDescendants()) do
+if v:IsA("BasePart") then
+v.Material = Enum.Material.Plastic
+v.Reflectance = 0
+elseif v:IsA("Decal") or v:IsA("Texture") then
+v.Transparency = 1
+elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+v.Enabled = false
+end
+end
+end)
+notify("FPS Boost", "ON")
+else
+notify("FPS Boost", "OFF")
+end
+end })
 m2:Toggle({ Title = "No Fall Damage", Value = false, Callback = function(s)
 State.NoFallDamage = s
 if Humanoid then
@@ -596,7 +622,14 @@ if part:IsA("BasePart") then part.CanCollide = false end
 end
 end
 end)
-RunService.Heartbeat:Connect(function() pcall(updateESP) end)
+local espTimer = 0
+RunService.Heartbeat:Connect(function(dt)
+espTimer = espTimer + dt
+if espTimer >= 0.1 then
+espTimer = 0
+pcall(updateESP)
+end
+end)
 for _, p in ipairs(Players:GetPlayers()) do
 p.CharacterAdded:Connect(function()
 if espObjects[p] then
